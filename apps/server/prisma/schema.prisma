@@ -19,4 +19,15 @@ model BookShop {
   name      String
   latitude  Float
   longitude Float
+
+  address_city        String?
+  address_housenumber String?
+  address_postcode    String?
+  address_street      String?
+
+  email   String?
+  phone   String?
+  website String?
+
+  openingHours String?
 }

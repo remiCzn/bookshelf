@@ -17,11 +17,4 @@ export class TrpcService {
 	});
 	router = this.trpc.router;
 	mergeRouters = this.trpc.mergeRouters;
-
-	private readonly logger = new Logger(this.constructor.name);
-
-	constructor(
-		private readonly prismaService: PrismaService,
-		private readonly configService: ConfigService,
-	) {}
 }

@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
 import { ConfigModule } from "@nestjs/config";
 import { TrpcModule } from "./trpc/trpc.module";
 import configuration from "./configuration";
+import { ScriptsModule } from "./scripts/scripts.module";
 
 @Module({
 	imports: [
@@ -13,8 +13,8 @@ import configuration from "./configuration";
 			envFilePath: [".env"],
 			load: [configuration],
 		}),
+		ScriptsModule,
 	],
 	controllers: [AppController],
-	providers: [AppService],
 })
 export class AppModule {}

@@ -3,7 +3,19 @@ import { z } from "zod";
 import { TrpcService } from "@server/trpc/trpc.service";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { PrismaService } from "@server/prisma/prisma.service";
-import { ConfigService } from "@nestjs/config";
+
+const bookShopsValidation = z.array(
+	z.object({
+		name: z.string(),
+		latitude: z.number(),
+		longitude: z.number(),
+		address_street: z.string().nullable(),
+		address_city: z.string().nullable(),
+		distance: z.number(),
+	}),
+);
+
+type BookShops = z.infer<typeof bookShopsValidation>;
 
 @Injectable()
 export class TrpcRouter {
@@ -20,25 +32,20 @@ export class TrpcRouter {
 					longitude: z.number(),
 				}),
 			)
-			.output(
-				z.array(
-					z.object({
-						name: z.string(),
-						distance: z.number(),
-					}),
-				),
-			)
+			.output(bookShopsValidation)
 			.query(async ({ input }) => {
-				return await this.prismaService.$queryRaw`
-			SELECT name,
-				   (6371 * acos(cos(radians(${input.latitude})) 
-							   * cos(radians(latitude)) 
-							   * cos(radians(longitude) - radians(${input.longitude})) 
-							   + sin(radians(${input.latitude})) 
-							   * sin(radians(latitude)))) AS distance
-			FROM "BookShop"
-			ORDER BY distance ASC;
-		  `;
+				// return [];
+				const result: BookShops = await this.prismaService.$queryRaw`
+					SELECT name, latitude, longitude, address_street, address_city, (6371 * acos(cos(radians(${input.latitude})) 
+									* cos(radians(latitude)) 
+									* cos(radians(longitude) - radians(${input.longitude})) 
+									+ sin(radians(${input.latitude})) 
+									* sin(radians(latitude)))) as distance
+					FROM "BookShop"
+					ORDER BY distance ASC
+					LIMIT 10;
+				`;
+				return result;
 			}),
 	});
 
