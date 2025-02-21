@@ -1,0 +1,13 @@
+{
+	"apps": [
+		{
+			"name": "Bookself",
+			"cwd": "/root/apps/bookself",
+			"script": "pnpm",
+			"args": "start",
+			"error_file": "bookself.log",
+			"out_file": "bookself.log",
+			"merge_logs": true
+		}
+	]
+}
