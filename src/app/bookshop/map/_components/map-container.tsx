@@ -1,36 +1,47 @@
 "use client";
 
-import FAB from "@/app/_components/floating-action-button";
+import Fab from "@/app/_components/floating-action-button";
 import { api } from "@/trpc/react";
 import { LatLng } from "leaflet";
-import { ArrowLeft, BookOpenText, ExternalLink, Locate } from "lucide-react";
-import Link from "next/link";
+import { BookOpenText, ExternalLink, Locate } from "lucide-react";
 import React from "react";
-import {
-	MapContainer,
-	Marker,
-	Popup,
-	TileLayer,
-	useMapEvents,
-} from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import { createDivIcon } from "./utils";
 import "leaflet/dist/leaflet.css";
 import Button from "@/app/_components/button";
+import { useLocation } from "@/lib/geolocation";
 
 const INIT_POS = new LatLng(48.866667, 2.333333);
+
+const BookIcon = () => (
+	<div className="flex items-center justify-center bg-tertiary-container size-8 rounded-full border border-on-tertiary-container/30 text-on-tertiary-container">
+		<BookOpenText className="size-5" />
+	</div>
+);
+
+const PositionIcon = () => (
+	<span className="relative flex size-4 ">
+		<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-500 opacity-75" />
+		<div className="relative size-4 rounded-full bg-white border border-sky-600 flex items-center justify-center">
+			<span className="size-3 bg-sky-600 rounded-full" />
+		</div>
+	</span>
+);
+
+const ClusterIcon = (i: number) => {
+	return () => (
+		<div className="flex items-center font-bold justify-center bg-tertiary-container size-8 rounded-full border border-on-tertiary-container/30 text-on-tertiary-container">
+			{i}
+		</div>
+	);
+};
 
 export default function BookshopMapContainer() {
 	const [locationSet, setLocationSet] = React.useState(false);
 
 	return (
 		<>
-			<FAB
-				href="/bookshop"
-				size="small"
-				Icon={ArrowLeft}
-				className="z-20 absolute top-3 left-3"
-			/>
 			<MapContainer
 				center={INIT_POS}
 				zoom={13}
@@ -41,7 +52,7 @@ export default function BookshopMapContainer() {
 			>
 				<MapContent locationSet={locationSet} setLocationSet={setLocationSet} />
 			</MapContainer>
-			<FAB
+			<Fab
 				size="small"
 				onClick={() => setLocationSet(false)}
 				Icon={Locate}
@@ -58,40 +69,17 @@ const MapContent = ({
 	locationSet: boolean;
 	setLocationSet: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-	const [pos, setPos] = React.useState<[number, number]>([
-		INIT_POS.lat,
-		INIT_POS.lng,
-	]);
-
-	const map = useMapEvents({
-		locationfound: (e) => {
-			setPos([e.latlng.lat, e.latlng.lng]);
-		},
+	const { data: bookshops } = api.bookshop.getAll.useQuery(void 0, {
+		staleTime: Number.POSITIVE_INFINITY,
 	});
-
-	React.useEffect(() => {
-		if (!locationSet && pos) {
-			map.flyTo(pos, 13, { duration: 0.2 });
-			setLocationSet(true);
-		}
-	}, [locationSet, pos, map.flyTo, setLocationSet]);
-
-	const { data: bookshops } = api.bookshop.getAll.useQuery();
-
-	map.locate({ watch: true, enableHighAccuracy: true });
 
 	return (
 		<>
 			<TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
 			<MarkerClusterGroup
-				chunkedLoading
 				iconCreateFunction={(cluster: any) =>
-					createDivIcon(() => (
-						<div className="flex items-center font-bold justify-center bg-tertiary-container size-8 rounded-full border border-on-tertiary-container/30 text-on-tertiary-container">
-							{cluster.getChildCount()}
-						</div>
-					))
+					createDivIcon(ClusterIcon(cluster.getChildCount()))
 				}
 			>
 				{bookshops?.map((x) => {
@@ -99,11 +87,7 @@ const MapContent = ({
 						<Marker
 							key={x.id}
 							position={[x.longitude, x.latitude]}
-							icon={createDivIcon(() => (
-								<div className="flex items-center justify-center bg-tertiary-container size-8 rounded-full border border-on-tertiary-container/30 text-on-tertiary-container">
-									<BookOpenText className="size-5" />
-								</div>
-							))}
+							icon={createDivIcon(BookIcon)}
 						>
 							<Popup>
 								<p>{x.name}</p>
@@ -115,17 +99,31 @@ const MapContent = ({
 					);
 				})}
 			</MarkerClusterGroup>
-			<Marker
-				position={pos}
-				icon={createDivIcon(() => (
-					<span className="relative flex size-4 ">
-						<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-500 opacity-75" />
-						<div className="relative size-4 rounded-full bg-white border border-sky-600 flex items-center justify-center">
-							<span className="size-3 bg-sky-600 rounded-full" />
-						</div>
-					</span>
-				))}
+			<PositionMarker
+				locationSet={locationSet}
+				setLocationSet={setLocationSet}
 			/>
 		</>
 	);
+};
+
+const PositionMarker = ({
+	locationSet,
+	setLocationSet,
+}: {
+	locationSet: boolean;
+	setLocationSet: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+	const pos = useLocation();
+
+	const map = useMap();
+
+	React.useEffect(() => {
+		if (!locationSet && pos) {
+			map.flyTo(pos, 13, { duration: 0.2 });
+			setLocationSet(true);
+		}
+	}, [locationSet, pos, map.flyTo, setLocationSet]);
+
+	return pos && <Marker position={pos} icon={createDivIcon(PositionIcon)} />;
 };

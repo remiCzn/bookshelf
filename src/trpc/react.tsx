@@ -9,6 +9,7 @@ import SuperJSON from "superjson";
 
 import type { AppRouter } from "@/server/api/root";
 import { createQueryClient } from "./query-client";
+import { auth } from "@/server/auth/firebase-client";
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
 const getQueryClient = () => {
@@ -51,8 +52,12 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
 				unstable_httpBatchStreamLink({
 					transformer: SuperJSON,
 					url: `${getBaseUrl()}/api/trpc`,
-					headers: () => {
+					headers: async () => {
+						const token = await auth.currentUser?.getIdToken();
 						const headers = new Headers();
+						if (token) {
+							headers.set("Authorization", `Bearer ${token}`);
+						}
 						headers.set("x-trpc-source", "nextjs-react");
 						return headers;
 					},

@@ -1,10 +1,8 @@
-import { Compass, Loader2 } from "lucide-react";
-import dynamic from "next/dynamic";
-import FAB from "../_components/floating-action-button";
+"use client";
 
-const BookshopList = dynamic(() => import("./_components/list"), {
-	loading: () => <Loader2 className="animate-spin" />,
-});
+import { Compass } from "lucide-react";
+import Fab from "../_components/floating-action-button";
+import BookshopList from "./_components/list";
 
 export default function Bookshops() {
 	return (
@@ -15,7 +13,7 @@ export default function Bookshops() {
 				</h2>
 				<BookshopList />
 			</div>
-			<FAB className="absolute right-0" href="bookshop/map" Icon={Compass} />
+			<Fab className="absolute right-0" href="bookshop/map" Icon={Compass} />
 		</>
 	);
 }

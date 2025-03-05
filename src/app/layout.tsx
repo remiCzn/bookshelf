@@ -7,7 +7,6 @@ import { TRPCReactProvider } from "@/trpc/react";
 import Link from "next/link";
 import roboto from "@/styles/roboto";
 import Footer from "./_components/footer";
-import { getServerSession } from "next-auth";
 
 export const metadata: Metadata = {
 	title: "Bookself",
@@ -17,10 +16,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
 	children,
-	user,
-}: Readonly<{ children: React.ReactNode; user: number }>) {
-	const session = await getServerSession();
-
+}: Readonly<{ children: React.ReactNode }>) {
 	return (
 		<html lang="fr" className={`${roboto.className} bg-surface`}>
 			<body>
@@ -32,13 +28,13 @@ export default async function RootLayout({
 								className="flex flex-row items-center gap-4 text-on-surface text-2xl font-normal"
 							>
 								<BookOpenText className="size-6" />
-								Bookself {user}
+								Books
 							</Link>
 						</nav>
 						<div className="h-full overflow-hidden flex-1 flex flex-col relative">
 							{children}
 						</div>
-						<Footer connected={!!session} />
+						<Footer />
 					</div>
 				</TRPCReactProvider>
 			</body>

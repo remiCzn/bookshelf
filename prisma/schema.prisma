@@ -27,17 +27,64 @@ model BookShop {
     website String?
 
     openingHours String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+}
+
+model FirebaseUser {
+    user       User   @relation(fields: [userId], references: [id])
+    userId     Int    @unique
+    firebaseId String @unique
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
 }
 
 model User {
-    id      Int       @id @default(autoincrement())
-    Session Session[]
+    id           Int           @id @default(autoincrement())
+    email        String
+    username     String        @unique @db.VarChar(255)
+    FirebaseUser FirebaseUser?
+    addedBook    Book[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
 }
 
-model Session {
-    id        String   @id
-    userId    Int
-    expiresAt DateTime
+model Book {
+    id       String  @id @default(uuid())
+    title    String
+    author   Author  @relation(name: "AuthorBooks", fields: [authorId], references: [id])
+    authorId String
+    subtitle String?
 
-    user User @relation(fields: [userId], references: [id])
+    publishedAt DateTime?
+    description String?
+    isbn_10     String?   @unique
+    isbn_13     String?   @unique
+    language    Language? @relation(fields: [languageId], references: [id])
+    languageId  String?
+
+    addedBy   User? @relation(fields: [addedById], references: [id])
+    addedById Int?
+
+    thumbnail String?
+
+    addedAt   DateTime? @default(now())
+    updatedAt DateTime? @default(now()) @updatedAt
+}
+
+model Language {
+    id   String @id
+    Book Book[]
+}
+
+model Author {
+    id    String @id @default(uuid())
+    name  String @unique
+    books Book[] @relation(name: "AuthorBooks")
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
 }

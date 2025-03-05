@@ -4,7 +4,7 @@ import { cva, VariantProps } from "class-variance-authority";
 import Link from "next/link";
 
 const buttonVariant = cva(
-	"rounded-full h-10 px-6 flex flex-row items-center justify-center gap-2 cursor-pointer disabled:cursor-auto font-roboto text-sm font-medium",
+	"rounded-full flex flex-row items-center justify-center gap-2 cursor-pointer disabled:cursor-auto font-roboto text-sm font-medium",
 	{
 		variants: {
 			variant: {
@@ -18,9 +18,14 @@ const buttonVariant = cva(
 					"bg-transparent border border-outline text-primary disabled:text-on-surface/40 disabled:border-on-surface/10",
 				text: "bg-transparent text-primary disabled:text-on-surface/40",
 			},
+			size: {
+				default: "h-10 px-6",
+				square: "h-10 w-10 p-0",
+			},
 		},
 		defaultVariants: {
 			variant: "elevated",
+			size: "default",
 		},
 	},
 );
@@ -33,8 +38,8 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-	({ children, variant, className, href, ...props }, ref) => {
-		const c = cn(buttonVariant({ variant, className }));
+	({ children, variant, size, className, href, ...props }, ref) => {
+		const c = cn(buttonVariant({ variant, size, className }));
 		if (href) {
 			return (
 				<Link href={href} ref={ref} className={c} {...(props as any)}>

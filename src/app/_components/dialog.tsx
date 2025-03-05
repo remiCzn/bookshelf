@@ -2,6 +2,7 @@ import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { cn } from "./utils";
+import roboto from "@/styles/roboto";
 
 const Dialog = DialogPrimitive.Root;
 
@@ -85,7 +86,8 @@ const DialogTitle = React.forwardRef<
 	<DialogPrimitive.Title
 		ref={ref}
 		className={cn(
-			"text-lg font-semibold leading-none tracking-tight",
+			roboto.className,
+			"text-lg font-normal leading-none tracking-tight",
 			className,
 		)}
 		{...props}
